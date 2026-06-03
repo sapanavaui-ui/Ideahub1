@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idea Hub | Staff App Master</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="role-staff">
+
+<div class="app-container">
+    
+    <div id="toast-container"></div>
+
+    <div id="login-view" class="view active">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>Idea Hub Coworking Space + Cafe</h2>
+            </div>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="login-username" class="standard-input" value="staff1">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="passInput" class="standard-input" value="Admin123!@#$">
+                    <i class="fa-solid fa-eye-slash eye-icon" id="togglePass" onclick="togglePassword()"></i>
+                </div>
+            </div>
+            <button class="login-btn" onclick="login()">Login</button>
+            <p style="text-align:center; font-size:11px; color:#9ca3af; margin-top:20px;">Tip: Login as 'admin' for full access</p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none; flex-direction: column; height: 100%;">
+        
+        <div class="header">
+            <div class="header-brand">
+                <div class="logo-box"><i class="fa-regular fa-lightbulb"></i></div>
+                Idea Hub
+            </div>
+            <div class="header-icons">
+                <div class="cart-icon-wrapper" onclick="openCart()">
+                    <i class="fa-solid fa-shopping-bag"></i>
+                    <div class="cart-badge" id="cart-badge">0</div>
+                </div>
+                <div class="icon-btn" onclick="toggleSideMenu()">
+                    <i class="fa-solid fa-bars" style="font-size: 18px;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-view" class="view">
+            <div class="content">
+                <div class="admin-hero">
+                    <h2>Admin Panel</h2>
+                    <p>Manage staff accounts, analytics & operations</p>
+                    <button class="btn-add-staff" onclick="openModal('add-staff-modal')">
+                        <i class="fa-solid fa-user-plus"></i> Add Staff
+                    </button>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon"><i class="fa-solid fa-user-group"></i></div>
+                    <h1 style="font-size: 36px; color: var(--primary-dark);" id="total-customers-display">19</h1>
+                    <p style="font-size: 14px; color: var(--text-sub);">Total Customers Today</p>
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <h3 style="font-size: 18px; color: var(--primary-dark); margin-bottom: 10px;">Staff Activity Logs</h3>
+                    
+                    <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                        <input type="date" id="log-date-filter" class="standard-input" onchange="renderActivityLogs()">
+                        <select id="log-staff-filter" class="standard-input" onchange="renderActivityLogs()">
+                            <option value="all">All Staff</option>
+                            <option value="Admin User">Admin User</option>
+                            <option value="Staff User">Staff User</option>
+                        </select>
+                    </div>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div style="font-weight:600; font-size:14px; color:var(--primary-dark);">Activity Summary</div>
+                            <button class="btn-action-blue" style="padding: 6px 12px; font-size:12px; flex:none;" onclick="generateActivitySummary()">Generate</button>
+                        </div>
+                        <div id="log-summary-output" style="font-size:13px; color:var(--text-sub); line-height:1.5;">Click generate to see a summary of filtered logs.</div>
+                    </div>
+
+                    <div id="admin-logs-container" style="display:flex; flex-direction:column; gap:10px; max-height: 400px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-view" class="view">
+            <div class="content">
+                <div class="profile-avatar-large"><i class="fa-regular fa-user"></i></div>
+                <div class="profile-title">My Profile</div>
+                <div class="profile-subtitle">Account details</div>
+
+                <div class="profile-card">
+                    <div class="profile-field">
+                        <label>Full Name</label>
+                        <div class="val" id="profile-name">Saver</div>
+                    </div>
+                    <div class="profile-field">
+                        <label>Username</label>
+                        <div class="val" id="profile-username">staff1</div>
+                    </div>
+                    <div class="profile-field" style="margin-bottom: 0;">
+                        <label>Role</label>
+                        <div class="val" id="profile-role">Staff</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-view" class="view">
+            <div class="content">
+                <div class="top-bar-controls">
+                    <div>
+                        <h2 class="page-title">Active Sessions</h2>
+                        <p class="page-subtitle" id="active-session-count">2 customer(s)</p>
+                    </div>
+                    <select class="filter-dropdown" id="dash-filter" onchange="applyDashboardFilters()">
+                        <option value="all">All Active</option>
+                        <option value="premium">Premium Lounge</option>
+                        <option value="regular">Regular Area</option>
+                    </select>
+                </div>
+                
+                <input type="text" id="dash-search" class="search-bar" placeholder="Search customer..." onkeyup="applyDashboardFilters()">
+                
+                <div style="display:flex; gap:10px;">
+                    <div class="avail-card" style="flex:1;">
+                        <div class="avail-info"><h4>Regular Lounge</h4><p>Occupied</p></div>
+                        <span class="badge-green" id="avail-reg">19 left</span>
+                    </div>
+                    <div class="avail-card" style="flex:1;">
+                        <div class="avail-info"><h4>Premium Lounge</h4><p>Occupied</p></div>
+                        <span class="badge-gold" id="avail-prem">29 left</span>
+                    </div>
+                </div>
+
+                <div id="active-sessions-list">
+                    <div class="session-card" data-space="regular" data-pax="1" id="customer-kurt" data-bill="450" data-paid="0">
+                        <div class="session-header">
+                            <div>
+                                <div class="session-name">Kurt D.</div>
+                                <span class="badge-space">Regular Lounge</span>
+                            </div>
+                            <span class="badge-unpaid" id="badge-status-customer-kurt">Unpaid</span>
+                        </div>
+                        <div class="time-track">
+                            <div>Time in <br><strong id="timein-kurt">08:30 AM</strong></div>
+                            <div>Duration <br><strong class="duration-display" style="color: var(--primary-gold);">04:12:00</strong></div>
+                        </div>
+                        <div class="finance-track">
+                            <div>Bill <br><strong style="color: var(--primary-dark);" id="bill-customer-kurt">₱450.00</strong></div>
+                            <div style="text-align: right;">Balance <br><strong style="color: var(--danger);" id="balance-customer-kurt">₱450.00</strong></div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-action-blue" onclick="startSessionOrder('customer-kurt', 'Kurt D.', 'Regular Lounge')">Add Order</button>
+                            <button class="btn-action-gold" onclick="openPayment('Kurt D.', 'customer-kurt')">Pay / Checkout</button>
+                        </div>
+                    </div>
+
+                    <div class="session-card" data-space="premium" data-pax="1" id="customer-maria" data-bill="320" data-paid="220">
+                        <div class="session-header">
+                            <div>
+                                <div class="session-name">Maria S.</div>
+                                <span class="badge-space">Premium Lounge</span>
+                            </div>
+                            <span class="badge-partial" id="badge-status-customer-maria">Partially Paid</span>
+                        </div>
+                        <div class="time-track">
+                            <div>Time in <br><strong id="timein-maria">10:15 AM</strong></div>
+                            <div>Duration <br><strong class="duration-display" style="color: var(--primary-gold);">02:27:00</strong></div>
+                        </div>
+                        <div class="finance-track">
+                            <div>Bill <br><strong style="color: var(--primary-dark);" id="bill-customer-maria">₱320.00</strong></div>
+                            <div style="text-align: right;">Balance <br><strong style="color: var(--danger);" id="balance-customer-maria">₱100.00</strong></div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-action-blue" onclick="startSessionOrder('customer-maria', 'Maria S.', 'Premium Lounge')">Add Order</button>
+                            <button class="btn-action-gold" onclick="openPayment('Maria S.', 'customer-maria')">Pay / Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="fab-green" onclick="openModal('checkin-modal')"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div id="orders-view" class="view">
+            <div class="content">
+                <div class="toggle-container">
+                    <button class="toggle-btn active" id="tab-btn-active" onclick="toggleOrderTabs('active')">Active Orders</button>
+                    <button class="toggle-btn" id="tab-btn-menu" onclick="toggleOrderTabs('menu')">Browse Menu</button>
+                </div>
+
+                <div id="orders-active-tab">
+                    <div id="orders-list-container">
+                        <h2 class="page-title">Orders</h2>
+                        <p class="page-subtitle" id="active-orders-count">2 session(s)</p>
+                        <table class="orders-table">
+                            <thead>
+                                <tr><th>Customer / Space</th><th>Items</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="active-orders-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="order-detail-container" style="display: none;"></div>
+                </div>
+
+                <div id="orders-menu-tab" style="display: none;">
+                    <input type="text" id="menu-search" class="search-bar" placeholder="Search menu items..." onkeyup="applyMenuFilters()">
+                    
+                    <div class="top-bar-controls" style="margin-top: -5px;">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--primary-dark);">Category:</div>
+                        <select class="filter-dropdown" id="menu-filter" onchange="applyMenuFilters()">
+                            <option value="all">All Items</option>
+                            <option value="meals">Meals</option>
+                            <option value="beverages">Beverages</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="desserts">Desserts</option>
+                        </select>
+                    </div>
+                    
+                    <div class="food-grid" id="food-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="cart-view" class="view">
+            <div class="content" id="cart-view-content" style="position: relative;"></div>
+        </div>
+
+        <div id="records-view" class="view">
+            <div class="content">
+                <h2 class="page-title">Checkout Records</h2>
+                <p class="page-subtitle" id="records-count">2 record(s)</p>
+                
+                <input type="text" id="records-search" class="search-bar" placeholder="Search customer..." onkeyup="applyRecordsFilters()">
+                <div class="records-controls">
+                    <input type="date" id="record-start-date" onchange="applyRecordsFilters()">
+                    <input type="date" id="record-end-date" onchange="applyRecordsFilters()">
+                </div>
+                <select id="record-method-filter" class="search-bar" style="margin-bottom: 10px;" onchange="applyRecordsFilters()">
+                    <option>All payments</option><option>Cash</option><option>GCash</option>
+                </select>
+                <button class="btn-clear" onclick="clearRecordsFilters()">Clear</button>
+
+                <div class="record-summary cash"><span>Cash</span><strong id="summary-cash-val">₱0.00 <span>(0)</span></strong></div>
+                <div class="record-summary gcash"><span>GCash</span><strong id="summary-gcash-val">₱0.00 <span>(0)</span></strong></div>
+                <div class="record-summary total"><span>Grand Total</span><strong id="records-total">₱0.00 <span>(0)</span></strong></div>
+
+                <h3 style="font-size: 16px; color: var(--text-sub); margin: 20px 0 15px;" id="records-month-display">June 2026</h3>
+                
+                <div id="transaction-list">
+                    <div class="detailed-record" data-name="mark d." data-date="2026-06-01" data-method="cash" data-amount="350.00">
+                        <div class="detailed-record-header"><h4>Mark D.</h4><span class="badge-tag" style="background:#10b981;">Cash</span></div>
+                        <div class="detailed-record-space">Processed at 09:30 AM</div>
+                        <div class="detailed-row" style="margin-bottom:0;"><span>Total Paid:</span> <strong style="font-size:16px; color:var(--primary-dark);">₱350.00</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory-view" class="view">
+            <div class="content">
+                <div class="inv-header-title"><i class="fa-solid fa-box" style="color: #c28b57; font-size: 32px;"></i> Inventory<br>Management</div>
+                
+                <div class="toggle-container" style="margin-bottom: 25px;">
+                    <button class="toggle-btn active" id="inv-tab-stock" onclick="toggleInvTabs('stock')">Stock Levels</button>
+                    <button class="toggle-btn" id="inv-tab-menu" onclick="toggleInvTabs('menu')">Menu Settings</button>
+                </div>
+
+                <div id="inv-stock-content">
+                    <div class="inv-summary-grid">
+                        <div class="inv-card low">
+                            <div class="inv-card-title"><i class="fa-solid fa-circle" style="color: #ef4444;"></i> LOW STOCK</div>
+                            <div class="inv-card-num" id="inv-low-count">0</div>
+                        </div>
+                        <div class="inv-card warning">
+                            <div class="inv-card-title"><i class="fa-solid fa-circle" style="color: #fef08a;"></i> WARNING</div>
+                            <div class="inv-card-num" id="inv-warn-count">0</div>
+                        </div>
+                        <div class="inv-card total">
+                            <div class="inv-card-title"><i class="fa-solid fa-square-check" style="color: #86efac;"></i> TOTAL</div>
+                            <div class="inv-card-num" id="inv-total-count">0</div>
+                        </div>
+                    </div>
+
+                    <div id="inventory-stock-list"></div>
+                </div>
+
+                <div id="inv-menu-content" style="display: none;">
+                    <button class="btn-new-rec" style="background: var(--action-blue);" onclick="openModal('modal-add-item')">+ Add New Menu Item</button>
+                    <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 15px;">Toggle switches to mark items as Available or Out of Stock.</p>
+                    <input type="text" id="inv-menu-search" class="search-bar" placeholder="Search menu items..." onkeyup="applyInvMenuFilters()">
+                    <div id="inv-menu-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="receivables-view" class="view">
+            <div class="content">
+                <h2 class="page-title">Receivables / Debt Tracker</h2>
+                <p class="page-subtitle" id="receivables-count">Loading...</p>
+                
+                <button class="btn-new-rec" onclick="openModal('new-rec-modal')">+ New Receivable</button>
+                
+                <div class="rec-summary-container">
+                    <div class="rec-summary-card red">
+                        <div class="label">Total Unpaid</div>
+                        <div class="value" id="rec-total-val">₱0.00</div>
+                    </div>
+                    <div class="rec-summary-card yellow">
+                        <div class="label">Unpaid Count</div>
+                        <div class="value" id="rec-unpaid-count">0</div>
+                    </div>
+                </div>
+
+                <div id="receivables-list"></div>
+            </div>
+        </div>
+
+        <div id="expenses-view" class="view">
+            <div class="content">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <h1 style="font-size: 28px; font-weight: 700; color: var(--primary-dark); line-height: 1.2;">Staff<br>Expenses</h1>
+                    <button style="background: var(--primary-gold); color: white; padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; border: none;" onclick="openModal('expense-modal')">+ Log<br>Expense</button>
+                </div>
+
+                <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 10px;"><i class="fa-solid fa-filter"></i> Filter Expenses:</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="date" id="exp-start" class="standard-input" style="padding: 8px; font-size: 12px;" onchange="renderExpenses()"> 
+                        <span style="align-self: center; font-size: 12px; color: var(--text-sub);">to</span>
+                        <input type="date" id="exp-end" class="standard-input" style="padding: 8px; font-size: 12px;" onchange="renderExpenses()">
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="exp-filter-btn active" id="exp-btn-today" onclick="setExpFilter('today')">Today</button>
+                        <button class="exp-filter-btn" id="exp-btn-week" onclick="setExpFilter('week')">This Week</button>
+                        <button class="exp-filter-btn" id="exp-btn-month" onclick="setExpFilter('month')">This Month</button>
+                        <button class="exp-filter-btn" id="exp-btn-all" onclick="setExpFilter('all')">Show All</button>
+                    </div>
+                </div>
+
+                <div class="exp-total-card">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">Total Expenses</div>
+                    <div style="font-size: 28px; font-weight: 300;" id="exp-total-display">₱0.00</div>
+                </div>
+
+                <h3 style="font-size: 18px; font-weight: 600; color: var(--primary-dark); margin-bottom: 15px;">All Expenses</h3>
+                <div id="expenses-list-container"></div>
+            </div>
+        </div>
+        
+        <div id="daily-balance-view" class="view">
+            <div class="content"></div>
+        </div>
+
+        <div id="performance-view" class="view">
+            <div class="content">
+                <h2 class="page-title">Performance</h2>
+                <p class="page-subtitle">Key metrics and insights.</p>
+                <div class="empty-cart-state" style="border:1px solid #e5e7eb; border-radius:12px; background:white; padding: 20px; margin-top:20px;">
+                    <div style="font-size: 40px; margin-bottom: 10px; color: var(--primary-gold);"><i class="fa-solid fa-trophy"></i></div>
+                    <div style="font-size:16px; font-weight:600; color:var(--primary-dark); margin-bottom: 5px;">System Active</div>
+                    <div style="font-size:13px; line-height:1.5;">Staff accounts are tracking properly. The daily check-ins, inventory flow, and active active sessions are successfully routing through the database.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics-view" class="view">
+            <div class="content">
+                <h2 class="page-title">Analytics</h2>
+                <p class="page-subtitle">Deep dive into store data.</p>
+                <div class="empty-cart-state" style="border:1px solid #e5e7eb; border-radius:12px; background:white; padding: 20px; margin-top:20px;">
+                    <div style="font-size: 40px; margin-bottom: 10px; color: var(--action-blue);"><i class="fa-solid fa-chart-line"></i></div>
+                    <div style="font-size:16px; font-weight:600; color:var(--primary-dark); margin-bottom: 5px;">Data Collected</div>
+                    <div style="font-size:13px; line-height:1.5;">Full graphical analytics reporting will populate as you complete more transactions and log expenses over the month.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="navTo('dashboard', 0)">
+                <i class="fa-solid fa-border-all"></i><span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="goToOrders()">
+                <i class="fa-solid fa-bag-shopping"></i><span>Orders</span>
+            </div>
+            <div class="nav-item" onclick="navTo('records', 2)">
+                <i class="fa-solid fa-receipt"></i><span>Records</span>
+            </div>
+            <div class="nav-item" onclick="toggleSideMenu()">
+                <i class="fa-solid fa-ellipsis"></i><span>More</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-menu-overlay" id="side-overlay" onclick="toggleSideMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <div class="side-menu-header">
+            <h2>Menu</h2>
+            <i class="fa-solid fa-xmark" style="font-size: 24px; color: var(--text-sub); cursor: pointer;" onclick="toggleSideMenu()"></i>
+        </div>
+        <div style="padding-bottom: 30px;">
+            <button class="menu-list-item admin-only" onclick="navTo('admin')"><i class="fa-solid fa-shield-halved"></i> Admin Panel</button>
+            <button class="menu-list-item" onclick="showToast('Regular space selected', 'info')"><i class="fa-regular fa-user"></i> Regular</button>
+            <button class="menu-list-item" onclick="showToast('Premium space selected', 'info')"><i class="fa-regular fa-star"></i> Premium</button>
+            <button class="menu-list-item" onclick="showToast('Boardroom space selected', 'info')"><i class="fa-regular fa-building"></i> Boardroom</button>
+
+            <div class="menu-section-title">OPERATIONS</div>
+            <button class="menu-list-item" onclick="navTo('inventory')"><i class="fa-solid fa-cubes"></i> Inventory</button>
+            <button class="menu-list-item" onclick="goToOrders()"><i class="fa-solid fa-server"></i> Menu</button>
+            <button class="menu-list-item" id="menu-expenses" onclick="navTo('expenses'); setExpFilter('today');"><i class="fa-regular fa-folder"></i> Expenses</button>
+            <button class="menu-list-item" id="menu-rec" onclick="navTo('receivables')"><i class="fa-solid fa-user-group"></i> Receivables</button>
+            
+            <div class="menu-section-title">FINANCE</div>
+            <button class="menu-list-item" id="menu-daily" onclick="navTo('daily-balance')"><i class="fa-solid fa-money-bill-wave"></i> Daily Balance</button>
+            <button class="menu-list-item" id="menu-perf" onclick="navTo('performance')"><i class="fa-solid fa-trophy"></i> Performance</button>
+            <button class="menu-list-item" id="menu-analytics" onclick="navTo('analytics')"><i class="fa-solid fa-chart-line"></i> Analytics</button>
+
+            <div class="menu-section-title">ACCOUNT</div>
+            <button class="menu-list-item" onclick="goToOrders()"><i class="fa-solid fa-bag-shopping"></i> Orders</button>
+            <button class="menu-list-item" onclick="navTo('profile')"><i class="fa-regular fa-user"></i> Profile</button>
+            <button class="menu-list-item danger" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+        </div>
+    </div>
+
+    <div id="add-staff-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add New Staff</h3>
+                <i class="fa-solid fa-xmark" onclick="closeModal('add-staff-modal')" style="cursor: pointer; font-size: 24px; color: var(--text-sub);"></i>
+            </div>
+            <div class="input-group"><input type="text" id="new-staff-name" class="standard-input" placeholder="Full Name"></div>
+            <div class="input-group"><input type="text" id="new-staff-username" class="standard-input" placeholder="Username"></div>
+            <div class="input-group"><input type="password" id="new-staff-pass" class="standard-input" placeholder="Password"></div>
+            <div class="input-group">
+                <select id="new-staff-role" class="standard-input">
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="modal-actions" style="margin-top: 30px;">
+                <button class="btn-cancel" onclick="closeModal('add-staff-modal')">Cancel</button>
+                <button class="btn-confirm-blue" onclick="processAddStaff()">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkin-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>New Customer Check-in</h3>
+                <i class="fa-solid fa-xmark" onclick="closeModal('checkin-modal')" style="cursor: pointer; font-size: 24px; color: var(--text-sub);"></i>
+            </div>
+            <div class="input-group"><input type="text" id="ci-name" class="standard-input" placeholder="Customer Name"></div>
+            <div class="input-group"><input type="text" id="ci-school" class="standard-input" placeholder="School"></div>
+            <div class="input-group"><input type="text" id="ci-course" class="standard-input" placeholder="Course"></div>
+            <div class="input-group"><input type="number" id="ci-pax" class="standard-input" placeholder="1" value="1"></div>
+            <div class="input-group">
+                <select id="ci-space" class="standard-input">
+                    <option value="Regular Lounge">Regular Lounge</option>
+                    <option value="Premium Lounge">Premium Lounge</option>
+                    <option value="Boardroom">Boardroom</option>
+                </select>
+            </div>
+            <div class="modal-actions" style="margin-top: 30px;">
+                <button class="btn-cancel" onclick="closeModal('checkin-modal')">Cancel</button>
+                <button class="btn-confirm-blue" onclick="processCheckin()">Check In</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-rec-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>New Receivable</h3>
+                <i class="fa-solid fa-xmark" onclick="closeModal('new-rec-modal')" style="cursor: pointer; font-size: 24px; color: var(--text-sub);"></i>
+            </div>
+            <div class="input-group"><input type="text" id="nrec-name" class="standard-input" placeholder="Debtor Name"></div>
+            <div class="input-group"><input type="text" id="nrec-phone" class="standard-input" placeholder="Phone Number (Optional)"></div>
+            <div class="input-group"><input type="number" id="nrec-amount" class="standard-input" placeholder="Initial Debt Amount (₱)"></div>
+            <div class="input-group">
+                <label>Due Date</label>
+                <input type="date" id="nrec-date" class="standard-input">
+            </div>
+            <div class="modal-actions" style="margin-top: 30px;">
+                <button class="btn-cancel" onclick="closeModal('new-rec-modal')">Cancel</button>
+                <button class="btn-confirm-blue" style="background: #eab308;" onclick="processNewReceivable()">Add Receivable</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expense-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Log Staff Expense</h3>
+                <i class="fa-solid fa-xmark" onclick="closeModal('expense-modal')" style="cursor: pointer; font-size: 24px; color: var(--text-sub);"></i>
+            </div>
+            <div class="input-group"><input type="text" id="exp-name" class="standard-input" placeholder="Expense Description (e.g. Groceries)"></div>
+            <div class="input-group"><input type="number" id="exp-amount" class="standard-input" placeholder="Amount (₱)"></div>
+            <div class="input-group">
+                <label>Date</label>
+                <input type="date" id="exp-date-input" class="standard-input">
+            </div>
+            <div class="modal-actions" style="margin-top: 30px;">
+                <button class="btn-cancel" onclick="closeModal('expense-modal')">Cancel</button>
+                <button class="btn-confirm-blue" style="background: var(--cyan-expense);" onclick="processLogExpense()">Save Expense</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-add-item" class="modal-overlay">
+        <div class="modal-box purple-modal">
+            <div class="modal-header-purple" style="background: var(--action-blue);">
+                <h3><i class="fa-solid fa-circle-plus"></i> Add Menu Item</h3>
+                <i class="fa-solid fa-xmark" onclick="closeModal('modal-add-item')" style="cursor: pointer; font-size: 20px;"></i>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Item Name</label>
+                    <input type="text" id="add-item-name" class="standard-input" placeholder="e.g. Iced Matcha">
+                </div>
+                <div class="input-group">
+                    <label>Price (₱)</label>
+                    <input type="number" id="add-item-price" class="standard-input" placeholder="e.g. 120">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="add-item-category" class="standard-input">
+                        <option value="beverages">Beverages</option>
+                        <option value="meals">Meals</option>
+                        <option value="snacks">Snacks</option>
+                        <option value="desserts">Desserts</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="input-group" style="flex:1;">
+                        <label>Initial Stock</label>
+                        <input type="number" id="add-item-stock" class="standard-input" placeholder="0">
+                    </div>
+                    <div class="input-group" style="flex:1;">
+                        <label>Low Alert At</label>
+                        <input type="number" id="add-item-threshold" class="standard-input" placeholder="5">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn-cancel-grey" onclick="closeModal('modal-add-item')">Cancel</button>
+                    <button class="btn-confirm-purple" style="background: var(--action-blue);" onclick="processAddItem()">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-update-stock" class="modal-overlay">
+        <div class="modal-box purple-modal">
+            <div class="modal-header-purple">
+                <h3>Edit Item & Stock</h3>
+                <i class="fa-solid fa-times" onclick="closeModal('modal-update-stock')" style="cursor: pointer; font-size: 20px;"></i>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Update Price (₱)</label>
+                    <input type="number" id="update-price-input" class="standard-input" placeholder="e.g. 150">
+                </div>
+                <div class="input-group">
+                    <label>Update Stock Quantity</label>
+                    <input type="number" id="update-qty-input" class="standard-input" placeholder="e.g. 50">
+                </div>
+                <div class="input-group">
+                    <label>Reason for Update</label>
+                    <select class="standard-input"><option>Restock / Price Change</option><option>Damaged</option><option>Used</option></select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-cancel-grey" onclick="closeModal('modal-update-stock')">Cancel</button>
+                    <button class="btn-confirm-purple" style="margin-top: 0;" onclick="confirmStockUpdate()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header" style="border: none; padding-bottom: 0;">
+                <h3>Payment & Checkout</h3>
+                <i class="fa-solid fa-times" onclick="closeModal('payment-modal')" style="cursor: pointer; font-size: 20px; color: var(--text-sub);"></i>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+                <p style="font-size: 13px; color: var(--text-sub);">Total Due for <span id="pay-name" style="font-weight: bold;">User</span></p>
+                <h1 style="color: var(--danger); font-size: 32px;" id="pay-total">₱0.00</h1>
+            </div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Select Method</label>
+            <div class="payment-methods">
+                <button class="pay-btn active" id="btn-cash" onclick="selectMethod('cash')"><i class="fa-solid fa-money-bill-wave"></i> Cash</button>
+                <button class="pay-btn" id="btn-gcash" onclick="selectMethod('gcash')"><i class="fa-solid fa-mobile-screen"></i> GCash</button>
+            </div>
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label>Amount Tendered (₱)</label>
+                <input type="number" class="standard-input" id="pay-input" placeholder="Enter amount..." oninput="calculatePayment()">
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
+                <span style="font-weight: 600; color: var(--text-main);">Status:</span>
+                <span id="pay-status" class="badge" style="background: #e2e8f0; color: var(--text-sub);">Awaiting Input</span>
+            </div>
+            
+            <button class="login-btn" style="margin-top:0;" onclick="processPayment(false)">Checkout (Full Payment)</button>
+            <button id="btn-pay-later" onclick="processPayment(true)" style="width:100%; margin-top:10px; padding: 12px 20px; background: transparent; color: var(--warning); border: 2px solid var(--warning); border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s;">Checkout (Partial / Not Paid)</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
